@@ -1,15 +1,17 @@
 import { useState } from "react";
-const initialItems = [
-  { id: 1, description: "Passports", quantity: 2, packed: false },
-  { id: 2, description: "Socks", quantity: 12, packed: true },
-  { id: 3, description: "Dress", quantity: 4, packed: false },
-];
 export default function App() {
+  const [items, setItems] = useState([]);
+  function onAddItems(item) {
+    setItems((items) => [...items, item]);
+  }
+  function onClickDelete(id) {
+    setItems((items) => items.filter((item) => item.id !== id));
+  }
   return (
     <div className="app">
       <Logo />
-      <Form />
-      <PackingList />
+      <Form onAddItems={onAddItems} />
+      <PackingList items={items} onClickDelete={onClickDelete} />
       <Stats />
     </div>
   );
@@ -17,14 +19,15 @@ export default function App() {
 function Logo() {
   return <h1>🌴FAR AWAY💼</h1>;
 }
-function Form() {
+function Form({ onAddItems }) {
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(1);
+
   function submitForm(e) {
     e.preventDefault();
     if (!description) return;
     const item = { description, quantity, packed: false, id: Date.now() };
-    console.log(item);
+    onAddItems(item);
     setDescription("");
     setQuantity(1);
   }
@@ -51,22 +54,24 @@ function Form() {
     </form>
   );
 }
-function PackingList() {
+function PackingList({ items, onClickDelete }) {
   return (
     <div className="list">
       <ul>
-        {initialItems.map((item) => (
-          <Item item={item} key={item.id} />
+        {items.map((item) => (
+          <Item item={item} key={item.id} onClickDelete={onClickDelete} />
         ))}
       </ul>
     </div>
   );
 }
-function Item({ item }) {
+function Item({ item, onClickDelete }) {
   return (
     <li>
+      <input type="checkbox" />
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
-        {item.quantity} {item.description} ❌
+        {item.quantity} {item.description}
+        <button onClick={() => onClickDelete(item.id)}>❌</button>
       </span>
     </li>
   );
