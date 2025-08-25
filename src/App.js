@@ -7,12 +7,26 @@ export default function App() {
   function onClickDelete(id) {
     setItems((items) => items.filter((item) => item.id !== id));
   }
+  function onSelectToggle(id) {
+    setItems((items) =>
+      items.map((item) => {
+        if (item.id === id) {
+          item.packed = true;
+        }
+        return item;
+      })
+    );
+  }
   return (
     <div className="app">
       <Logo />
       <Form onAddItems={onAddItems} />
-      <PackingList items={items} onClickDelete={onClickDelete} />
-      <Stats />
+      <PackingList
+        items={items}
+        onClickDelete={onClickDelete}
+        onSelectToggle={onSelectToggle}
+      />
+      <Stats items={items} />
     </div>
   );
 }
@@ -54,21 +68,26 @@ function Form({ onAddItems }) {
     </form>
   );
 }
-function PackingList({ items, onClickDelete }) {
+function PackingList({ items, onClickDelete, onSelectToggle }) {
   return (
     <div className="list">
       <ul>
         {items.map((item) => (
-          <Item item={item} key={item.id} onClickDelete={onClickDelete} />
+          <Item
+            item={item}
+            key={item.id}
+            onClickDelete={onClickDelete}
+            onSelectToggle={onSelectToggle}
+          />
         ))}
       </ul>
     </div>
   );
 }
-function Item({ item, onClickDelete }) {
+function Item({ item, onClickDelete, onSelectToggle }) {
   return (
     <li>
-      <input type="checkbox" />
+      <input type="checkbox" onChange={() => onSelectToggle(item.id)} />
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
         {item.quantity} {item.description}
         <button onClick={() => onClickDelete(item.id)}>❌</button>
@@ -76,11 +95,22 @@ function Item({ item, onClickDelete }) {
     </li>
   );
 }
-function Stats() {
+function Stats({ items }) {
+  if (!items.length)
+    return (
+      <footer className="stats">
+        <em>Your are yet to pack.</em>
+      </footer>
+    );
+  let itemsCount = items.length;
+  let packedItems = items.filter((item) => item.packed).length;
+  let packedpercentage = Math.round((packedItems / itemsCount) * 100);
   return (
     <footer className="stats">
       <em>
-        💼 You have X items on your list, and you already packed X items (X%){" "}
+        {itemsCount === packedItems
+          ? `your got everything! ready to go ✈️`
+          : `💼 You have ${itemsCount} items on your list, and you already packed ${packedItems} items (${packedpercentage} %)`}
       </em>
     </footer>
   );
